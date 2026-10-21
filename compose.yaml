@@ -1,0 +1,31 @@
+services:
+  h6-recorder:
+    build: .
+    image: h6-trip-recorder:0.14.0
+    restart: unless-stopped
+    stop_grace_period: 90s
+    ports:
+      - "${BIND_IP:-127.0.0.1}:${HOST_PORT:-18770}:18770"
+    environment:
+      DATA_DIR: /data
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:18770}
+      PYTHONPATH: /app:/opt/vehicle-client
+    volumes:
+      - h6_data:/data
+      - ${GWM_CLIENT_HOST_PATH:-./external/vehicle-client}:/opt/vehicle-client:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 384m
+    cpus: 1.0
+    logging:
+      driver: local
+      options:
+        max-size: 5m
+        max-file: "2"
+volumes:
+  h6_data:
